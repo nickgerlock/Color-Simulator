@@ -1,71 +1,65 @@
-<h1>Color Simulator</h1>
-
 <script lang="ts">
+  import ColorControls from '../color_controls.svelte';
   import ColorSimulator from '../color_simulator.svelte';
-  import { BrightnessRange, ColorTemperatureRange, FilterStrengthRange } from '../lib/defaults';
+  import { BrightnessRange, ColorTemperatureRange, FilterStrengthRange } from '../lib/ranges';
 
   let brightness: number = BrightnessRange.default;
   let colorTemperature: number = ColorTemperatureRange.default;
   let filterStrength: number = FilterStrengthRange.default;
 </script>
 
-<ColorSimulator brightness={brightness} colorTemperature={colorTemperature} filterStrength={filterStrength}></ColorSimulator>
-
-<div class="controls">
-  <div class="brightness control">
-    <label for="brightness">Brightness</label>
-    <input bind:value={brightness} type="range" id="brightness" name="brightness" min="{BrightnessRange.min}" max="{BrightnessRange.max}" step="{BrightnessRange.step}"/>
+<div class="page">
+  <div class="header">
+    <h1>Color Simulator</h1>
   </div>
 
-  <div class="color_temperature control">
-    <label for="color_temperature">Color Temperature</label>
-    <input bind:value={colorTemperature} type="range" id="color_temperature" name="color_temperature" min="{ColorTemperatureRange.min}" max="{ColorTemperatureRange.max}" step="{ColorTemperatureRange.step}" list="temperature_values" />
-  </div>
-  <datalist id="temperature_values">
-    {#each (ColorTemperatureRange.list || []) as colorTemperature}
-      <option value="{colorTemperature.value}">{colorTemperature.label}</option>
-    {/each}
-  </datalist>
+  <div class="content">
+    <div class="color_simulator_container">
+      <ColorSimulator brightness={brightness} colorTemperature={colorTemperature} filterStrength={filterStrength}></ColorSimulator>
+    </div>
 
-  <div class="filter_strength_container control">
-    <label for="filter_strength">Filter Strength</label>
-    <input bind:value={filterStrength} type="range" id="filter_strength" name="filter_strength" min="{FilterStrengthRange.min}" max="{FilterStrengthRange.max}" step="{FilterStrengthRange.step}" />
+    <hr>
+
+    <div class="color_controls_container">
+      <ColorControls bind:brightness={brightness} bind:colorTemperature={colorTemperature} bind:filterStrength={filterStrength}></ColorControls>
+    </div>
   </div>
+
 </div>
 
 <style>
-
-  datalist {
+  .page {
+    height: 100%;
     display: flex;
-    justify-content: space-between;
-    font-size: small;
-    width: 400px;
-    margin: auto;
+    flex-direction: column;
+  }
+  .header {
+    flex-grow: 0;
+  }
+  .content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    max-height: 800px;
   }
 
-  option {
-    padding: 0;
+  .color_simulator_container {
+    display: flex;
+    padding-top: 10vh;
+    padding-bottom: 4vh;
+    flex-grow: 1;
   }
 
-  .controls {
-    width: 400px;
-    margin: auto;
-    font-size: larger;
+  .color_controls_container {
+    display: flex;
+    align-items: flex-end;
+    flex-grow: 1;
+    flex-grow: 1;
   }
 
-  .controls label {
-    display: block;
-    text-align: center;
+  hr {
+    border-color: var(--border-color);
+    border-width: 0.5px;
+    width: 100vw;
   }
-
-  .controls input {
-    display: block;
-    margin: auto;
-    width: 400px;
-  }
-
-  .controls .control {
-    margin-top: 1em;
-  }
-
 </style>

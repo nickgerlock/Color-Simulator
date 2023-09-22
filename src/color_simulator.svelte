@@ -4,6 +4,8 @@
   export let colorTemperature: number = 4000;
   export let filterStrength: number = 1.0;
 
+  import ColorBox from './color_box.svelte';
+  import type { Color } from './lib/color';
   import { scaleColor, filterColor, colorString } from './lib/color';
   import { temperatureToRGB } from './lib/color_temperature';
   import {
@@ -17,70 +19,79 @@
     Cyan,
   } from './lib/colors';
 
-  let canvas: HTMLCanvasElement;
+  const MAX_WIDTH_PER_NUM_COPIES = 200;
+  const pureColors = [
+    White,
+    Black,
+    Red,
+    Green,
+    Blue,
+    Yellow,
+    Magenta,
+    Cyan,
+  ];
 
-  const CANVAS_HEIGHT = 200;
-  const CANVAS_WIDTH = 1000;
-  const BAR_HEIGHT = 100;
-  const BAR_MARGIN = 25;
+  const numCopies = 1;
+  let itemsPerRow: number;
+  let maxWidth: string;
 
-  $: draw(canvas, brightness, colorTemperature, filterStrength);
+  let colors: [string, string, string][];
+  let lightSource: Color;
+  let lightRows: [string, string, string][][];
 
-  function draw(canvas: HTMLCanvasElement, brightness: number, colorTemperature: number, filterStrength: number) {
-    if (!canvas) return;
-    canvas.width = CANVAS_WIDTH;
-    canvas.height = CANVAS_HEIGHT;
-
-    const context = canvas.getContext("2d");
-    if (!context) return;
-
-    const pureColors = [
-      White,
-      Black,
-      Red,
-      Green,
-      Blue,
-      Yellow,
-      Magenta,
-      Cyan,
+  $: maxWidth = `${MAX_WIDTH_PER_NUM_COPIES / numCopies}px`;
+  $: lightSource = scaleColor(temperatureToRGB(colorTemperature), brightness);
+  $: colors = pureColors.map(color => {
+    return [
+      colorString(scaleColor(filterColor(lightSource, scaleColor(color, 1.5), filterStrength), 1.0)),
+      colorString(scaleColor(filterColor(lightSource, scaleColor(color, 1.75), filterStrength * 0.7), 1.2)),
+      colorString(scaleColor(filterColor(lightSource, scaleColor(color, 2.0), filterStrength * 0.2), 1.4)),
     ];
-    const lightSource = scaleColor(temperatureToRGB(colorTemperature), brightness);
-    const barWidth: number = (CANVAS_WIDTH - (BAR_MARGIN * pureColors.length)) / pureColors.length;
-    const accentHeight = BAR_HEIGHT * 0.75;
-    const accentWidth = barWidth * 0.75;
-    const subAccentWidth = accentWidth / 2;
-    const subAccentHeight = accentHeight / 2;
-    const squareSizeWithMargin = barWidth + BAR_MARGIN;
+  });
+  $: lightRows = [colors.slice(0, colors.length / 2), colors.slice(colors.length / 2)];
+  $: itemsPerRow = colors.length;
 
-    let x = BAR_MARGIN, y = 0;
-    const colorRows = [pureColors];
-    colorRows.forEach(colorList => {
-      colorList.forEach(color => {
-        const main = scaleColor(filterColor(lightSource, scaleColor(color, 1.5), filterStrength), 1.0);
-        const brighter = scaleColor(filterColor(lightSource, scaleColor(color, 1.75), filterStrength * 0.7), 1.2);
-        const brightest = scaleColor(filterColor(lightSource, scaleColor(color, 2.0), filterStrength * 0.2), 1.4);
-        context.fillStyle = colorString(main);
-        context.fillRect(x, y, barWidth, BAR_HEIGHT);
-        context.fillStyle = colorString(brighter);
-        context.fillRect(x + (0.5 * barWidth) - (0.5 * accentWidth), y + (0.5 * BAR_HEIGHT) - (accentHeight * 0.5), accentWidth, accentHeight);
-        context.fillStyle = colorString(brightest);
-        context.fillRect(x + (0.5 * barWidth) - (0.5 * accentWidth - (0.5 * subAccentWidth)), y + (0.5 * BAR_HEIGHT) - (accentHeight * 0.5 - (0.5 * subAccentHeight)), subAccentWidth, subAccentHeight);
-
-        x += squareSizeWithMargin;
-      });
-      y += squareSizeWithMargin;
-      x = BAR_MARGIN;
-    });
-  }
 </script>
 
 <div class="color_simulator">
-  <canvas on:load={() => draw(canvas, brightness, colorTemperature, filterStrength)} id="canvas" width="{CANVAS_WIDTH}" height="{CANVAS_HEIGHT}" bind:this={canvas}></canvas>
+  <div class='light_rows' style='--itemsPerRow:{itemsPerRow}'>
+    {#each lightRows as lightRow}
+      <div class='light_row' style="--maxWidth:{maxWidth}">
+        {#each lightRow as light}
+          <ColorBox --color1={light[0]} --color2={light[1]} --color3={light[2]} --maxWidth={maxWidth}></ColorBox>
+        {/each}
+      </div>
+    {/each}
+  </div>
 </div>
 
 <style>
   .color_simulator {
     animation: fadein 0.4s;
+    display: flex;
+    flex-grow: 1;
+    height: 100%;
+  }
+  .light_rows {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    flex-grow: 1;
+    flex-basis: 300px;
+    margin: auto;
+    max-width: 80vw;
+    gap: 2%;
+    row-gap: 2%;
+  }
+  .light_row {
+    flex-grow: 1;
+    flex-direction: row;
+    display: flex;
+    gap: 4%;
+    flex-basis: var(--maxWidth, 200px);
+    min-width: 250px;
+    padding-bottom: 4%;
   }
   @keyframes fadein {
       from {
@@ -90,9 +101,9 @@
           opacity: 1;
       }
   }
-  canvas {
+  /* canvas {
     margin: auto;
     margin-top: 20em;
     display: block;
-  }
+  } */
 </style>

@@ -1,4 +1,4 @@
-type RangeParameters = {
+export type RangeParameters = {
   min: number
   max: number
   default: number
@@ -10,7 +10,18 @@ export const BrightnessRange: RangeParameters = {
   min: 0,
   max: 2,
   step: 0.05,
-  default: 0.8,
+  default: 0.9,
+  list: [
+    {
+      value: 0, label: "0%",
+    },
+    {
+      value: 1, label: "100%",
+    },
+    {
+      value: 2, label: "200%",
+    },
+  ],
 }
 
 export const ColorTemperatureRange: RangeParameters = {
@@ -41,5 +52,16 @@ export const FilterStrengthRange: RangeParameters = {
   min: 0,
   max: 1,
   step: 0.01,
-  default: 1.0,
+  default: 0.8,
+  list: [
+    {
+      value: 0, label: "0%",
+    },
+    {
+      value: 50, label: "50%",
+    },
+    {
+      value: 100, label: "100%",
+    },
+  ],
 }
